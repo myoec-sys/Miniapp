@@ -3,249 +3,514 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NFT Deals — Панель управления</title>
+    <title>Liquid Glass — NFT Deals</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: #0f0f14;
-            --card: #1b1b24;
-            --accent: #6c5ce7;
-            --accent-glow: rgba(108, 92, 231, 0.35);
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.16);
+            --glass-highlight: rgba(255, 255, 255, 0.32);
             --text: #ffffff;
-            --subtext: #9a9ab0;
-            --border: rgba(255, 255, 255, 0.08);
-            --success: #00b894;
+            --subtext: rgba(255, 255, 255, 0.55);
+            --accent: #7c5cff;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
         body {
-            background-color: var(--bg);
+            background: #07070c;
             color: var(--text);
-            padding: 16px;
             min-height: 100vh;
+            padding: 16px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Живой жидкий фон */
+        .ambient-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 0%, #171332 0%, #060609 75%);
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(70px);
+            opacity: 0.55;
+            animation: floatOrb 12s infinite alternate ease-in-out;
+        }
+
+        .orb-1 {
+            width: 260px;
+            height: 260px;
+            background: #6c5ce7;
+            top: -50px;
+            left: -40px;
+        }
+
+        .orb-2 {
+            width: 240px;
+            height: 240px;
+            background: #00cec9;
+            bottom: 10%;
+            right: -60px;
+            animation-delay: -5s;
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 40px) scale(1.12); }
+        }
+
+        /* Базовая стеклянная карточка с бликом от пальца/курсора */
+        .glass-card {
+            position: relative;
+            background: var(--glass-bg);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-top-color: var(--glass-highlight);
+            border-radius: 24px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, 0.14), transparent 60%);
+            pointer-events: none;
+            transition: opacity 0.2s;
         }
 
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: linear-gradient(135deg, rgba(108, 92, 231, 0.2), rgba(27, 27, 36, 0.9));
-            border: 1px solid var(--border);
-            padding: 16px;
-            border-radius: 18px;
-            margin-bottom: 18px;
         }
 
-        .user-info h2 {
+        .user-title {
             font-size: 18px;
             font-weight: 700;
+            letter-spacing: -0.3px;
         }
 
-        .user-info p {
-            font-size: 13px;
+        .user-sub {
+            font-size: 12px;
             color: var(--subtext);
             margin-top: 2px;
         }
 
-        .badge {
-            background: rgba(0, 184, 148, 0.15);
-            color: var(--success);
-            border: 1px solid rgba(0, 184, 148, 0.3);
+        .status-pill {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.25);
             padding: 6px 12px;
             border-radius: 99px;
+            font-size: 11px;
+            font-weight: 600;
+            backdrop-filter: blur(12px);
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.3);
+        }
+
+        .section-label {
             font-size: 12px;
             font-weight: 600;
-        }
-
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 16px;
-            margin-bottom: 14px;
-        }
-
-        .card-title {
-            font-size: 14px;
-            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
             color: var(--subtext);
             margin-bottom: 10px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 6px;
         }
 
-        .input-group {
+        /* Стеклянные поля ввода */
+        .glass-input-wrap {
             position: relative;
             display: flex;
             align-items: center;
+            margin-bottom: 10px;
         }
 
-        .input-prefix {
+        .glass-input-wrap:last-child {
+            margin-bottom: 0;
+        }
+
+        .prefix {
             position: absolute;
             left: 14px;
             color: var(--subtext);
             font-weight: 600;
+            pointer-events: none;
         }
 
-        input, select {
+        .glass-input {
             width: 100%;
-            background: #121218;
-            border: 1px solid var(--border);
-            color: var(--text);
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-top-color: rgba(255, 255, 255, 0.06);
+            color: #fff;
             padding: 13px 14px;
-            border-radius: 12px;
+            border-radius: 16px;
             font-size: 15px;
             outline: none;
-            transition: border 0.2s;
+            transition: border-color 0.25s, background 0.25s;
+            user-select: text;
         }
 
-        input.with-prefix {
+        .glass-input.has-prefix {
             padding-left: 32px;
         }
 
-        input:focus, select:focus {
-            border-color: var(--accent);
+        .glass-input:focus {
+            border-color: rgba(255, 255, 255, 0.38);
+            background: rgba(0, 0, 0, 0.42);
         }
 
-        .lang-switch {
+        /* ================= LIQUID GLASS DRAGGABLE SWITCH ================= */
+        .liquid-track {
+            position: relative;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            padding: 4px;
+            height: 48px;
+            touch-action: none;
+            overflow: hidden;
         }
 
-        .lang-btn {
-            background: #121218;
-            border: 1px solid var(--border);
-            color: var(--subtext);
-            padding: 12px;
-            border-radius: 12px;
-            text-align: center;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+        .liquid-track.cols-2 { grid-template-columns: 1fr 1fr; }
+        .liquid-track.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
 
-        .lang-btn.active {
-            background: rgba(108, 92, 231, 0.18);
-            border-color: var(--accent);
-            color: var(--text);
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
-
-        .cmd-preview {
-            background: #121218;
-            border: 1px dashed rgba(255, 255, 255, 0.15);
-            padding: 12px;
-            border-radius: 12px;
-            font-family: monospace;
-            font-size: 13px;
-            color: #a29bfe;
-            margin-top: 10px;
-            word-break: break-all;
-        }
-
-        .btn {
-            width: 100%;
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 15px;
+        /* Стеклянная капля-бегунок */
+        .liquid-thumb {
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            left: 4px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.08) 100%);
+            backdrop-filter: blur(16px) brightness(1.2);
+            -webkit-backdrop-filter: blur(16px) brightness(1.2);
+            border: 1px solid rgba(255, 255, 255, 0.38);
+            border-bottom-color: rgba(255, 255, 255, 0.12);
             border-radius: 14px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 20px var(--accent-glow);
-            transition: transform 0.15s;
-            margin-top: 8px;
+            box-shadow: 
+                0 4px 16px rgba(0, 0, 0, 0.35),
+                inset 0 1px 2px rgba(255, 255, 255, 0.55);
+            transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), scale 0.2s ease;
+            pointer-events: none;
+            z-index: 1;
         }
 
-        .btn:active {
-            transform: scale(0.98);
+        .liquid-track.dragging .liquid-thumb {
+            transition: scale 0.15s ease;
+            transform: translateX(var(--drag-x, 0px)) scale(1.04);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.14) 100%);
         }
 
-        .btn-secondary {
-            background: #252532;
-            box-shadow: none;
-            margin-top: 10px;
+        .liquid-option {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 14px;
-            padding: 11px;
+            font-weight: 600;
+            color: var(--subtext);
+            cursor: pointer;
+            transition: color 0.25s;
         }
 
-        .hint {
+        .liquid-option.active {
+            color: #ffffff;
+            text-shadow: 0 1px 8px rgba(255, 255, 255, 0.35);
+        }
+
+        /* ================= СПИСОК БИЗНЕС-ЧАТОВ ================= */
+        .chats-list {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scrollbar-width: none;
+        }
+
+        .chats-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chat-chip {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 10px 14px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.22s ease;
+        }
+
+        .chat-chip.selected {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .chat-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: #fff;
+        }
+
+        .chat-meta {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .chat-user {
+            font-size: 11px;
+            color: var(--subtext);
+        }
+
+        .empty-chats {
             font-size: 12px;
             color: var(--subtext);
-            margin-top: 8px;
+            padding: 8px 2px;
             line-height: 1.4;
+        }
+
+        /* ================= КНОПКИ LIQUID GLASS ================= */
+        .btn-glass {
+            width: 100%;
+            position: relative;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.07));
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-bottom-color: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            padding: 15px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.45);
+            transition: transform 0.15s ease, background 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-glass:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(124, 92, 255, 0.65), rgba(88, 56, 235, 0.35));
+            border-color: rgba(162, 155, 254, 0.55);
+        }
+
+        .btn-subtle {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.14);
+            font-size: 13px;
+            padding: 11px;
+            box-shadow: none;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="user-info">
-            <h2 id="userName">Загрузка...</h2>
-            <p id="userId">ID: —</p>
-        </div>
-        <div class="badge">Business Active</div>
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
     </div>
 
-    <!-- Привязка юзернейма получателя -->
-    <div class="card">
-        <div class="card-title">🎁 Аккаунт для получения подарков</div>
-        <div class="input-group">
-            <span class="input-prefix">@</span>
-            <input type="text" id="receiverInput" class="with-prefix" placeholder="username">
+    <!-- Профиль -->
+    <div class="glass-card header">
+        <div>
+            <div class="user-title" id="userName">NFT Deals</div>
+            <div class="user-sub" id="userId">Telegram Business</div>
         </div>
-        <p class="hint">На этот юзернейм будет автоматически создаваться ссылка <code>tg://send_gift?to=...</code> при принятии оффера.</p>
+        <div class="status-pill">Liquid Glass</div>
     </div>
 
-    <!-- Смена языка -->
-    <div class="card">
-        <div class="card-title">🌐 Язык карточек оффера</div>
-        <div class="lang-switch">
-            <div class="lang-btn active" id="langRu" onclick="selectLang('ru')">🇷🇺 Русский</div>
-            <div class="lang-btn" id="langEn" onclick="selectLang('en')">🇬🇧 English</div>
+    <!-- Выбор бизнес-чата для прямой отправки -->
+    <div class="glass-card">
+        <div class="section-label">
+            <span>💬 Ваши бизнес-чаты</span>
+            <span id="selectedChatBadge" style="color:#a29bfe;">Не выбран</span>
         </div>
+        <div class="chats-list" id="chatsContainer"></div>
     </div>
 
-    <!-- Генератор быстрой команды -->
-    <div class="card">
-        <div class="card-title">⚡ Конструктор команды оффера</div>
-        <input type="text" id="nftUrl" placeholder="Ссылка: https://t.me/nft/DurovsCap-1234" style="margin-bottom: 8px;" oninput="updateCmd()">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <input type="number" id="nftPrice" placeholder="Цена (500)" value="500" oninput="updateCmd()">
-            <select id="nftCurr" onchange="updateCmd()">
-                <option value="star">⭐ Stars</option>
-                <option value="gram">💎 GRAM</option>
-                <option value="usdt">💵 USDT</option>
-            </select>
+    <!-- Создание и отправка оффера -->
+    <div class="glass-card">
+        <div class="section-label">⚡ Отправить оффер напрямую</div>
+        <div class="glass-input-wrap">
+            <input type="text" id="nftUrl" class="glass-input" placeholder="https://t.me/nft/DurovsCap-1234">
         </div>
-        <div class="cmd-preview" id="cmdBox">!создать https://t.me/nft/DurovsCap-1234 500 star</div>
-        <button class="btn btn-secondary" onclick="copyCommand()">📋 Скопировать команду для чата</button>
+        <div class="glass-input-wrap" style="margin-bottom: 12px;">
+            <input type="number" id="nftPrice" class="glass-input" placeholder="Сумма (например, 500)" value="500">
+        </div>
+
+        <!-- Стеклянный переключатель валюты с поддержкой свайпа пальцем -->
+        <div class="liquid-track cols-3" id="currSwitch" data-value="star">
+            <div class="liquid-thumb"></div>
+            <div class="liquid-option active" data-val="star">⭐ Stars</div>
+            <div class="liquid-option" data-val="gram">💎 GRAM</div>
+            <div class="liquid-option" data-val="usdt">💵 USDT</div>
+        </div>
+
+        <button class="btn-glass btn-primary" onclick="sendOfferDirect()">🚀 Отправить оффер в выбранный чат</button>
+        <button class="btn-glass btn-subtle" onclick="copyCommand()">📋 Или скопировать команду !создать</button>
     </div>
 
-    <button class="btn" onclick="saveSettings()">💾 Сохранить настройки в боте</button>
+    <!-- Настройки получателя и языка -->
+    <div class="glass-card">
+        <div class="section-label">🎁 Получатель подарков и язык</div>
+        <div class="glass-input-wrap" style="margin-bottom: 12px;">
+            <span class="prefix">@</span>
+            <input type="text" id="receiverInput" class="glass-input has-prefix" placeholder="username">
+        </div>
+
+        <!-- Стеклянный переключатель языка -->
+        <div class="liquid-track cols-2" id="langSwitch" data-value="ru">
+            <div class="liquid-thumb"></div>
+            <div class="liquid-option active" data-val="ru">🇷🇺 Русский</div>
+            <div class="liquid-option" data-val="en">🇬🇧 English</div>
+        </div>
+
+        <button class="btn-glass" onclick="saveSettings()">💾 Сохранить настройки</button>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let currentLang = 'ru';
-        const user = tg.initDataUnsafe?.user;
+        // Haptic Feedback
+        function hapticImpact(style = 'light') {
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred(style);
+        }
+        function hapticNotify(type = 'success') {
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred(type);
+        }
+        function hapticSelect() {
+            if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+        }
 
-        // Читаем параметры из URL (если переданы ботом)
+        // Отслеживание пальца/курсора для стеклянного блика на карточках
+        document.addEventListener('pointermove', (e) => {
+            document.querySelectorAll('.glass-card').forEach(card => {
+                const rect = card.getBoundingClientRect();
+                card.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+                card.style.setProperty('--my', `${e.clientY - rect.top}px`);
+            });
+        });
+
+        // Инициализация перетаскиваемых стеклянных переключателей (Liquid Glass Drag)
+        function initLiquidSwitch(trackId, initialVal) {
+            const track = document.getElementById(trackId);
+            const thumb = track.querySelector('.liquid-thumb');
+            const options = Array.from(track.querySelectorAll('.liquid-option'));
+            const count = options.length;
+
+            let currentIndex = Math.max(0, options.findIndex(o => o.dataset.val === initialVal));
+            let isDragging = false;
+
+            function updateThumbPosition(index, triggerHaptic = false) {
+                if (triggerHaptic && index !== currentIndex) hapticSelect();
+                currentIndex = index;
+                const val = options[index].dataset.val;
+                track.dataset.value = val;
+
+                const thumbWidth = (track.clientWidth - 8) / count;
+                thumb.style.width = `${thumbWidth}px`;
+                thumb.style.transform = `translateX(${index * thumbWidth}px)`;
+
+                options.forEach((opt, i) => opt.classList.toggle('active', i === index));
+            }
+
+            window.addEventListener('resize', () => updateThumbPosition(currentIndex, false));
+            setTimeout(() => updateThumbPosition(currentIndex, false), 20);
+
+            track.addEventListener('pointerdown', (e) => {
+                isDragging = true;
+                track.classList.add('dragging');
+                track.setPointerCapture(e.pointerId);
+                hapticImpact('light');
+                handlePointer(e);
+            });
+
+            track.addEventListener('pointermove', (e) => {
+                if (!isDragging) return;
+                handlePointer(e);
+            });
+
+            const endDrag = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                track.classList.remove('dragging');
+                updateThumbPosition(currentIndex, false);
+            };
+
+            track.addEventListener('pointerup', endDrag);
+            track.addEventListener('pointercancel', endDrag);
+
+            function handlePointer(e) {
+                const rect = track.getBoundingClientRect();
+                const thumbWidth = (rect.width - 8) / count;
+                let relX = e.clientX - rect.left - 4 - thumbWidth / 2;
+                const maxLeft = (rect.width - 8) - thumbWidth;
+                relX = Math.max(0, Math.min(maxLeft, relX));
+
+                track.style.setProperty('--drag-x', `${relX}px`);
+
+                const hoveredIndex = Math.min(count - 1, Math.max(0, Math.round(relX / thumbWidth)));
+                if (hoveredIndex !== currentIndex) {
+                    currentIndex = hoveredIndex;
+                    track.dataset.value = options[currentIndex].dataset.val;
+                    options.forEach((opt, i) => opt.classList.toggle('active', i === currentIndex));
+                    hapticSelect();
+                }
+            }
+        }
+
+        // Чтение параметров из URL (список чатов, получатель, язык)
         const params = new URLSearchParams(window.location.search);
         const urlReceiver = params.get('receiver');
-        const urlLang = params.get('lang');
+        const urlLang = params.get('lang') || 'ru';
+        const rawChats = params.get('chats');
 
+        const user = tg.initDataUnsafe?.user;
         if (user) {
             document.getElementById('userName').innerText = user.first_name + (user.last_name ? ' ' + user.last_name : '');
             document.getElementById('userId').innerText = 'ID: ' + user.id;
@@ -254,41 +519,118 @@
             document.getElementById('receiverInput').value = urlReceiver;
         }
 
-        if (urlLang === 'en') {
-            selectLang('en');
+        initLiquidSwitch('currSwitch', 'star');
+        initLiquidSwitch('langSwitch', urlLang);
+
+        // Рендер бизнес-чатов
+        let selectedChat = null;
+        const chatsContainer = document.getElementById('chatsContainer');
+        let chatsList = [];
+
+        if (rawChats) {
+            try {
+                // Декодируем base64 URL-safe строку со списком чатов
+                const b64 = rawChats.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonStr = decodeURIComponent(escape(atob(b64)));
+                chatsList = JSON.parse(jsonStr);
+            } catch (e) {
+                console.error("Ошибка парсинга чатов:", e);
+            }
         }
 
-        function selectLang(lang) {
-            currentLang = lang;
-            document.getElementById('langRu').classList.toggle('active', lang === 'ru');
-            document.getElementById('langEn').classList.toggle('active', lang === 'en');
+        if (chatsList.length === 0) {
+            chatsContainer.innerHTML = `<div class="empty-chats">Пока нет активных бизнес-чатов. Как только кто-то напишет вам в личку (при включенном Telegram Business), чат сразу появится здесь.</div>`;
+        } else {
+            chatsList.forEach((c, idx) => {
+                const chip = document.createElement('div');
+                chip.className = 'chat-chip' + (idx === 0 ? ' selected' : '');
+                const firstLetter = (c.t || '?')[0].toUpperCase();
+                chip.innerHTML = `
+                    <div class="chat-avatar">${firstLetter}</div>
+                    <div class="chat-meta">
+                        <span class="chat-title">${c.t}</span>
+                        <span class="chat-user">${c.u ? '@' + c.u : 'ID: ' + c.id}</span>
+                    </div>
+                `;
+                chip.onclick = () => {
+                    hapticSelect();
+                    document.querySelectorAll('.chat-chip').forEach(el => el.classList.remove('selected'));
+                    chip.classList.add('selected');
+                    selectedChat = c;
+                    document.getElementById('selectedChatBadge').innerText = c.t;
+                };
+                chatsContainer.appendChild(chip);
+
+                if (idx === 0) {
+                    selectedChat = c;
+                    document.getElementById('selectedChatBadge').innerText = c.t;
+                }
+            });
         }
 
-        function updateCmd() {
-            const url = document.getElementById('nftUrl').value.trim() || 'https://t.me/nft/DurovsCap-1234';
-            const price = document.getElementById('nftPrice').value.trim() || '500';
-            const curr = document.getElementById('nftCurr').value;
-            document.getElementById('cmdBox').innerText = `!создать ${url} ${price} ${curr}`;
+        // Отправка оффера напрямую из Mini App в выбранный чат
+        function sendOfferDirect() {
+            const url = document.getElementById('nftUrl').value.trim();
+            const price = document.getElementById('nftPrice').value.trim();
+            const curr = document.getElementById('currSwitch').dataset.value;
+
+            if (!selectedChat) {
+                hapticNotify('error');
+                tg.showAlert('❌ Сначала выберите чат сверху! (Чат появляется автоматически после любого сообщения в вашей личке Telegram Business).');
+                return;
+            }
+            if (!url || !url.includes('t.me/nft/')) {
+                hapticNotify('error');
+                tg.showAlert('❌ Вставьте корректную ссылку на подарок (https://t.me/nft/...)');
+                return;
+            }
+            if (!price || Number(price) <= 0) {
+                hapticNotify('error');
+                tg.showAlert('❌ Укажите корректную цену!');
+                return;
+            }
+
+            hapticImpact('heavy');
+            hapticNotify('success');
+
+            const payload = JSON.stringify({
+                action: "send_offer",
+                chat_id: selectedChat.id,
+                conn_id: selectedChat.cid,
+                nft_url: url,
+                price: Number(price),
+                currency: curr,
+                receiver: document.getElementById('receiverInput').value.replace('@', '').trim(),
+                lang: document.getElementById('langSwitch').dataset.value
+            });
+            tg.sendData(payload);
         }
 
         function copyCommand() {
-            const cmdText = document.getElementById('cmdBox').innerText;
-            navigator.clipboard.writeText(cmdText);
-            tg.showAlert('✅ Команда скопирована! Вставьте её в любой бизнес-чат.');
+            hapticImpact('medium');
+            const url = document.getElementById('nftUrl').value.trim() || 'https://t.me/nft/DurovsCap-1234';
+            const price = document.getElementById('nftPrice').value.trim() || '500';
+            const curr = document.getElementById('currSwitch').dataset.value;
+            navigator.clipboard.writeText(`!создать ${url} ${price} ${curr}`);
+            hapticNotify('success');
+            tg.showAlert('✅ Команда скопирована!');
         }
 
         function saveSettings() {
             const receiver = document.getElementById('receiverInput').value.replace('@', '').trim();
+            const lang = document.getElementById('langSwitch').dataset.value;
             if (!receiver) {
-                tg.showAlert('❌ Укажите юзернейм для получения подарков!');
+                hapticNotify('error');
+                tg.showAlert('❌ Укажите ваш юзернейм!');
                 return;
             }
-            const payload = JSON.stringify({
+            hapticImpact('heavy');
+            hapticNotify('success');
+            tg.sendData(JSON.stringify({
                 action: "save_settings",
                 receiver: receiver,
-                lang: currentLang
-            });
-            tg.sendData(payload);
+                lang: lang
+            }));
         }
     </script>
 </body>
