@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Liquid Glass — NFT Deals</title>
+    <title>@steknft</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.06);
-            --glass-border: rgba(255, 255, 255, 0.16);
-            --glass-highlight: rgba(255, 255, 255, 0.32);
+            --bg: #050505;
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: rgba(255, 255, 255, 0.09);
+            --card-highlight: rgba(255, 255, 255, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.035);
             --text: #ffffff;
-            --subtext: rgba(255, 255, 255, 0.55);
-            --accent: #7c5cff;
+            --subtext: #86868b;
+            --warn-bg: rgba(255, 69, 58, 0.12);
+            --warn-border: rgba(255, 69, 58, 0.35);
+            --warn-text: #ff6961;
         }
 
         * {
@@ -22,114 +26,125 @@
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        html, body {
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: touch;
         }
 
         body {
-            background: #07070c;
+            background-color: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            padding: 16px;
+            padding: max(14px, env(safe-area-inset-top)) 16px max(110px, env(safe-area-inset-bottom) + 90px) 16px;
             overflow-x: hidden;
-            position: relative;
+            letter-spacing: -0.015em;
         }
 
-        /* Живой жидкий фон */
-        .ambient-bg {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            overflow: hidden;
-            background: radial-gradient(circle at 50% 0%, #171332 0%, #060609 75%);
-        }
-
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(70px);
-            opacity: 0.55;
-            animation: floatOrb 12s infinite alternate ease-in-out;
-        }
-
-        .orb-1 {
-            width: 260px;
-            height: 260px;
-            background: #6c5ce7;
-            top: -50px;
-            left: -40px;
-        }
-
-        .orb-2 {
-            width: 240px;
-            height: 240px;
-            background: #00cec9;
-            bottom: 10%;
-            right: -60px;
-            animation-delay: -5s;
-        }
-
-        @keyframes floatOrb {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(30px, 40px) scale(1.12); }
-        }
-
-        /* Базовая стеклянная карточка с бликом от пальца/курсора */
-        .glass-card {
-            position: relative;
-            background: var(--glass-bg);
-            backdrop-filter: blur(28px) saturate(180%);
-            -webkit-backdrop-filter: blur(28px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            border-top-color: var(--glass-highlight);
-            border-radius: 24px;
-            padding: 16px;
-            margin-bottom: 14px;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2);
-            overflow: hidden;
-        }
-
-        .glass-card::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, 0.14), transparent 60%);
-            pointer-events: none;
-            transition: opacity 0.2s;
-        }
-
-        .header {
+        /* Плашка профиля пользователя */
+        .profile-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            background: var(--card-bg);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid var(--card-border);
+            border-top-color: var(--card-highlight);
+            border-radius: 20px;
         }
 
-        .user-title {
-            font-size: 18px;
+        .profile-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: 700;
-            letter-spacing: -0.3px;
+            font-size: 16px;
+            overflow: hidden;
+            color: #fff;
         }
 
-        .user-sub {
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .profile-username {
             font-size: 12px;
             color: var(--subtext);
-            margin-top: 2px;
         }
 
-        .status-pill {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            padding: 6px 12px;
-            border-radius: 99px;
+        .brand-badge {
             font-size: 11px;
-            font-weight: 600;
-            backdrop-filter: blur(12px);
-            box-shadow: inset 0 1px 1px rgba(255,255,255,0.3);
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .burn-warning {
+            display: none;
+            background: var(--warn-bg);
+            border: 1px solid var(--warn-border);
+            border-radius: 18px;
+            padding: 13px 15px;
+            margin-bottom: 14px;
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--warn-text);
+        }
+
+        .burn-warning.visible { display: block; }
+
+        .tab-view { display: none; }
+        .tab-view.active { display: block; }
+
+        .glass-card {
+            position: relative;
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--card-border);
+            border-top-color: var(--card-highlight);
+            border-radius: 22px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
         }
 
         .section-label {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.6px;
+            letter-spacing: 0.5px;
             color: var(--subtext);
             margin-bottom: 10px;
             display: flex;
@@ -137,7 +152,22 @@
             align-items: center;
         }
 
-        /* Стеклянные поля ввода */
+        .hint-sub {
+            font-size: 11px;
+            color: #55555a;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .restore-link {
+            color: #86868b;
+            text-decoration: underline;
+            cursor: pointer;
+            display: none;
+        }
+
         .glass-input-wrap {
             position: relative;
             display: flex;
@@ -145,86 +175,97 @@
             margin-bottom: 10px;
         }
 
-        .glass-input-wrap:last-child {
-            margin-bottom: 0;
-        }
-
         .prefix {
             position: absolute;
             left: 14px;
             color: var(--subtext);
             font-weight: 600;
-            pointer-events: none;
         }
 
-        .glass-input {
+        .glass-input, .glass-textarea {
             width: 100%;
-            background: rgba(0, 0, 0, 0.28);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-top-color: rgba(255, 255, 255, 0.06);
-            color: #fff;
+            background: var(--input-bg);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--text);
             padding: 13px 14px;
-            border-radius: 16px;
-            font-size: 15px;
+            border-radius: 14px;
+            font-size: 14px;
             outline: none;
-            transition: border-color 0.25s, background 0.25s;
             user-select: text;
         }
 
-        .glass-input.has-prefix {
-            padding-left: 32px;
+        .glass-textarea {
+            resize: none;
+            height: 72px;
+            line-height: 1.4;
         }
 
-        .glass-input:focus {
-            border-color: rgba(255, 255, 255, 0.38);
-            background: rgba(0, 0, 0, 0.42);
+        .glass-input.has-prefix { padding-left: 32px; }
+        .glass-input:focus, .glass-textarea:focus { border-color: rgba(255, 255, 255, 0.35); }
+
+        /* Живой предпросмотр NFT */
+        .live-preview-box {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
         }
 
-        /* ================= LIQUID GLASS DRAGGABLE SWITCH ================= */
+        .live-preview-box.visible { display: flex; }
+
+        .live-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 6px 8px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .live-item-name {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .live-tag {
+            font-size: 10px;
+            font-weight: 700;
+            color: #34c759;
+            background: rgba(52, 199, 89, 0.14);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        /* Переключатели */
         .liquid-track {
             position: relative;
             display: grid;
-            background: rgba(0, 0, 0, 0.35);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 15px;
             padding: 4px;
-            height: 48px;
-            touch-action: none;
-            overflow: hidden;
+            height: 46px;
         }
 
         .liquid-track.cols-2 { grid-template-columns: 1fr 1fr; }
         .liquid-track.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
 
-        /* Стеклянная капля-бегунок */
         .liquid-thumb {
             position: absolute;
-            top: 4px;
-            bottom: 4px;
-            left: 4px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.08) 100%);
-            backdrop-filter: blur(16px) brightness(1.2);
-            -webkit-backdrop-filter: blur(16px) brightness(1.2);
-            border: 1px solid rgba(255, 255, 255, 0.38);
-            border-bottom-color: rgba(255, 255, 255, 0.12);
-            border-radius: 14px;
-            box-shadow: 
-                0 4px 16px rgba(0, 0, 0, 0.35),
-                inset 0 1px 2px rgba(255, 255, 255, 0.55);
-            transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), scale 0.2s ease;
+            top: 4px; bottom: 4px; left: 4px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: 11px;
+            transition: transform 0.3s ease;
             pointer-events: none;
-            z-index: 1;
-        }
-
-        .liquid-track.dragging .liquid-thumb {
-            transition: scale 0.15s ease;
-            transform: translateX(var(--drag-x, 0px)) scale(1.04);
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.14) 100%);
         }
 
         .liquid-option {
-            position: relative;
-            z-index: 2;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -232,404 +273,531 @@
             font-weight: 600;
             color: var(--subtext);
             cursor: pointer;
-            transition: color 0.25s;
+            z-index: 2;
         }
 
-        .liquid-option.active {
-            color: #ffffff;
-            text-shadow: 0 1px 8px rgba(255, 255, 255, 0.35);
-        }
+        .liquid-option.active { color: #ffffff; }
 
-        /* ================= СПИСОК БИЗНЕС-ЧАТОВ ================= */
-        .chats-list {
+        /* Список чатов + анимация зажатия */
+        .chats-vertical-list {
             display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding-bottom: 6px;
-            scrollbar-width: none;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 230px;
+            overflow-y: auto;
         }
 
-        .chats-list::-webkit-scrollbar {
-            display: none;
-        }
-
-        .chat-chip {
-            flex: 0 0 auto;
+        .chat-row {
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             padding: 10px 14px;
-            border-radius: 16px;
+            border-radius: 14px;
             cursor: pointer;
-            transition: all 0.22s ease;
+            transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
         }
 
-        .chat-chip.selected {
-            background: rgba(255, 255, 255, 0.18);
-            border-color: rgba(255, 255, 255, 0.5);
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.4);
-            transform: translateY(-1px);
+        .chat-row.selected {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.35);
+        }
+
+        .chat-row.holding {
+            transform: scale(0.96);
+            background: rgba(255, 69, 58, 0.16);
+            border-color: rgba(255, 69, 58, 0.45);
         }
 
         .chat-avatar {
-            width: 28px;
-            height: 28px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            background: rgba(255, 255, 255, 0.09);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-size: 13px;
-            color: #fff;
-        }
-
-        .chat-meta {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-title {
-            font-size: 13px;
             font-weight: 600;
             color: #fff;
+            margin-right: 10px;
         }
 
-        .chat-user {
-            font-size: 11px;
-            color: var(--subtext);
-        }
+        .chat-title { font-size: 13px; font-weight: 600; color: #fff; }
+        .chat-user { font-size: 11px; color: var(--subtext); }
 
         .empty-chats {
             font-size: 12px;
             color: var(--subtext);
-            padding: 8px 2px;
-            line-height: 1.4;
+            text-align: center;
+            padding: 16px 8px;
         }
 
-        /* ================= КНОПКИ LIQUID GLASS ================= */
-        .btn-glass {
+        .btn-main {
             width: 100%;
-            position: relative;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.07));
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.35);
-            border-bottom-color: rgba(255, 255, 255, 0.12);
-            color: #fff;
-            padding: 15px;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.13);
+            backdrop-filter: blur(20px);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 14px;
+            border-radius: 16px;
             font-size: 15px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.45);
-            transition: transform 0.15s ease, background 0.2s;
-            margin-top: 10px;
+            margin-top: 12px;
         }
 
-        .btn-glass:active {
-            transform: scale(0.97);
+        .btn-main:active { transform: scale(0.98); }
+
+        /* Док */
+        .bottom-dock-wrap {
+            position: fixed;
+            bottom: 16px; left: 16px; right: 16px;
+            display: flex;
+            justify-content: center;
+            z-index: 100;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, rgba(124, 92, 255, 0.65), rgba(88, 56, 235, 0.35));
-            border-color: rgba(162, 155, 254, 0.55);
+        .bottom-dock {
+            width: 100%;
+            max-width: 340px;
+            height: 62px;
+            background: rgba(16, 16, 18, 0.86);
+            backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            padding: 4px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            position: relative;
         }
 
-        .btn-subtle {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.14);
-            font-size: 13px;
-            padding: 11px;
-            box-shadow: none;
+        .dock-pill {
+            position: absolute;
+            top: 4px; bottom: 4px; left: 4px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.26);
+            border-radius: 999px;
+            transition: transform 0.3s ease;
         }
+
+        .dock-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            cursor: pointer;
+            color: var(--subtext);
+            z-index: 2;
+        }
+
+        .dock-tab.active { color: #ffffff; }
+        .dock-label { font-size: 11px; font-weight: 600; }
     </style>
 </head>
 <body>
 
-    <div class="ambient-bg">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
+    <!-- Плашка профиля -->
+    <div class="profile-bar">
+        <div class="profile-left">
+            <div class="profile-avatar" id="userAvatar">?</div>
+            <div>
+                <div class="profile-name" id="userName">Загрузка...</div>
+                <div class="profile-username" id="userUname">@username</div>
+            </div>
+        </div>
+        <div class="brand-badge" onclick="openChannel()">@steknft</div>
     </div>
 
-    <!-- Профиль -->
-    <div class="glass-card header">
-        <div>
-            <div class="user-title" id="userName">NFT Deals</div>
-            <div class="user-sub" id="userId">Telegram Business</div>
-        </div>
-        <div class="status-pill">Liquid Glass</div>
+    <div class="burn-warning" id="burnWarningBox">
+        ⚠️ <b>Необходимо установить юзернейм!</b><br>
+        Если не указать <b>@username</b>, переданные NFT безвозвратно сгорят!
     </div>
 
-    <!-- Выбор бизнес-чата для прямой отправки -->
-    <div class="glass-card">
-        <div class="section-label">
-            <span>💬 Ваши бизнес-чаты</span>
-            <span id="selectedChatBadge" style="color:#a29bfe;">Не выбран</span>
+    <!-- ВКЛАДКА 1: НАСТРОЙКИ -->
+    <div id="view-settings" class="tab-view active">
+        <div class="glass-card">
+            <div class="section-label">Юзернейм получателя</div>
+            <div class="glass-input-wrap">
+                <span class="prefix">@</span>
+                <input type="text" id="receiverInput" class="glass-input has-prefix" placeholder="username" oninput="checkWarning()">
+            </div>
         </div>
-        <div class="chats-list" id="chatsContainer"></div>
+
+        <div class="glass-card">
+            <div class="section-label">Язык карточек</div>
+            <div class="liquid-track cols-2" id="langSwitch" data-value="ru">
+                <div class="liquid-thumb"></div>
+                <div class="liquid-option active" data-val="ru">Русский</div>
+                <div class="liquid-option" data-val="en">English</div>
+            </div>
+        </div>
+
+        <button class="btn-main" onclick="saveSettings()">Сохранить настройки</button>
     </div>
 
-    <!-- Создание и отправка оффера -->
-    <div class="glass-card">
-        <div class="section-label">⚡ Отправить оффер напрямую</div>
-        <div class="glass-input-wrap">
-            <input type="text" id="nftUrl" class="glass-input" placeholder="https://t.me/nft/DurovsCap-1234">
-        </div>
-        <div class="glass-input-wrap" style="margin-bottom: 12px;">
-            <input type="number" id="nftPrice" class="glass-input" placeholder="Сумма (например, 500)" value="500">
+    <!-- ВКЛАДКА 2: ЧАТЫ И ПАКЕТНЫЙ ОФФЕР -->
+    <div id="view-chats" class="tab-view">
+        <div class="glass-card">
+            <div class="section-label">
+                <span>Личные чаты</span>
+                <span id="selectedChatBadge" style="color: #fff;">Не выбран</span>
+            </div>
+            <div class="hint-sub">
+                <span>Зажмите контакт для удаления</span>
+                <span class="restore-link" id="restoreBtn" onclick="restoreHiddenChats()">Вернуть скрытые</span>
+            </div>
+            <div class="glass-input-wrap" style="margin-bottom: 8px;">
+                <input type="text" id="chatSearchInput" class="glass-input" placeholder="Поиск по @username или имени..." oninput="filterChats()">
+            </div>
+            <div class="chats-vertical-list" id="chatsContainer"></div>
         </div>
 
-        <!-- Стеклянный переключатель валюты с поддержкой свайпа пальцем -->
-        <div class="liquid-track cols-3" id="currSwitch" data-value="star">
-            <div class="liquid-thumb"></div>
-            <div class="liquid-option active" data-val="star">⭐ Stars</div>
-            <div class="liquid-option" data-val="gram">💎 GRAM</div>
-            <div class="liquid-option" data-val="usdt">💵 USDT</div>
-        </div>
+        <div class="glass-card">
+            <div class="section-label">
+                <span>Пакетный оффер</span>
+                <span id="lotsCountBadge" style="color: #34c759;">0 лотов</span>
+            </div>
 
-        <button class="btn-glass btn-primary" onclick="sendOfferDirect()">🚀 Отправить оффер в выбранный чат</button>
-        <button class="btn-glass btn-subtle" onclick="copyCommand()">📋 Или скопировать команду !создать</button>
+            <div class="glass-input-wrap">
+                <textarea id="chatNftUrl" class="glass-textarea" placeholder="Вставьте ссылки на подарки (через запятую или пробел)&#10;t.me/nft/Cap-1, t.me/nft/Dog-2" oninput="onGiftsInput()"></textarea>
+            </div>
+
+            <div class="live-preview-box" id="livePreviewBox"></div>
+
+            <div class="glass-input-wrap" style="margin-bottom: 12px;">
+                <input type="number" id="chatNftPrice" class="glass-input" placeholder="Сумма за все подарки" value="500">
+            </div>
+
+            <div class="liquid-track cols-3" id="chatCurrSwitch" data-value="star">
+                <div class="liquid-thumb"></div>
+                <div class="liquid-option active" data-val="star">Stars</div>
+                <div class="liquid-option" data-val="gram">GRAM</div>
+                <div class="liquid-option" data-val="usdt">USDT</div>
+            </div>
+
+            <button class="btn-main" onclick="sendOfferDirect()">Отправить оффер</button>
+        </div>
     </div>
 
-    <!-- Настройки получателя и языка -->
-    <div class="glass-card">
-        <div class="section-label">🎁 Получатель подарков и язык</div>
-        <div class="glass-input-wrap" style="margin-bottom: 12px;">
-            <span class="prefix">@</span>
-            <input type="text" id="receiverInput" class="glass-input has-prefix" placeholder="username">
+    <!-- Нижний док -->
+    <div class="bottom-dock-wrap">
+        <div class="bottom-dock" id="bottomDock">
+            <div class="dock-pill" id="dockPill"></div>
+            <div class="dock-tab" onclick="switchDock(0)">
+                <span class="dock-label">Чаты и Оффер</span>
+            </div>
+            <div class="dock-tab active" onclick="switchDock(1)">
+                <span class="dock-label">Настройки</span>
+            </div>
         </div>
-
-        <!-- Стеклянный переключатель языка -->
-        <div class="liquid-track cols-2" id="langSwitch" data-value="ru">
-            <div class="liquid-thumb"></div>
-            <div class="liquid-option active" data-val="ru">🇷🇺 Русский</div>
-            <div class="liquid-option" data-val="en">🇬🇧 English</div>
-        </div>
-
-        <button class="btn-glass" onclick="saveSettings()">💾 Сохранить настройки</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+        if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+        tg.ready();
 
-        // Haptic Feedback
-        function hapticImpact(style = 'light') {
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred(style);
-        }
-        function hapticNotify(type = 'success') {
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred(type);
-        }
-        function hapticSelect() {
-            if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+        function hapticImpact(s = 'light') { if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred(s); }
+        function hapticNotify(t = 'success') { if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred(t); }
+        function hapticSelect() { if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); }
+        function openChannel() {
+            if (tg.openTelegramLink) tg.openTelegramLink('https://t.me/steknft');
+            else window.open('https://t.me/steknft', '_blank');
         }
 
-        // Отслеживание пальца/курсора для стеклянного блика на карточках
-        document.addEventListener('pointermove', (e) => {
-            document.querySelectorAll('.glass-card').forEach(card => {
-                const rect = card.getBoundingClientRect();
-                card.style.setProperty('--mx', `${e.clientX - rect.left}px`);
-                card.style.setProperty('--my', `${e.clientY - rect.top}px`);
-            });
-        });
+        // Отображение профиля
+        const u = tg.initDataUnsafe?.user;
+        if (u) {
+            document.getElementById('userName').innerText = (u.first_name + ' ' + (u.last_name || '')).trim();
+            document.getElementById('userUname').innerText = u.username ? '@' + u.username : 'ID: ' + u.id;
+            const av = document.getElementById('userAvatar');
+            if (u.photo_url) av.innerHTML = `<img src="${u.photo_url}">`;
+            else av.innerText = (u.first_name || '?')[0].toUpperCase();
+        }
 
-        // Инициализация перетаскиваемых стеклянных переключателей (Liquid Glass Drag)
-        function initLiquidSwitch(trackId, initialVal) {
-            const track = document.getElementById(trackId);
+        // Переключатели
+        function initSwitch(id, defaultVal) {
+            const track = document.getElementById(id);
             const thumb = track.querySelector('.liquid-thumb');
-            const options = Array.from(track.querySelectorAll('.liquid-option'));
-            const count = options.length;
+            const opts = track.querySelectorAll('.liquid-option');
+            let idx = Array.from(opts).findIndex(o => o.dataset.val === defaultVal);
 
-            let currentIndex = Math.max(0, options.findIndex(o => o.dataset.val === initialVal));
-            let isDragging = false;
-
-            function updateThumbPosition(index, triggerHaptic = false) {
-                if (triggerHaptic && index !== currentIndex) hapticSelect();
-                currentIndex = index;
-                const val = options[index].dataset.val;
-                track.dataset.value = val;
-
-                const thumbWidth = (track.clientWidth - 8) / count;
-                thumb.style.width = `${thumbWidth}px`;
-                thumb.style.transform = `translateX(${index * thumbWidth}px)`;
-
-                options.forEach((opt, i) => opt.classList.toggle('active', i === index));
+            function set(i) {
+                idx = i;
+                track.dataset.value = opts[i].dataset.val;
+                const w = (track.clientWidth - 8) / opts.length;
+                thumb.style.width = w + 'px';
+                thumb.style.transform = `translateX(${i * w}px)`;
+                opts.forEach((o, k) => o.classList.toggle('active', k === i));
             }
 
-            window.addEventListener('resize', () => updateThumbPosition(currentIndex, false));
-            setTimeout(() => updateThumbPosition(currentIndex, false), 20);
+            opts.forEach((o, i) => o.onclick = () => { hapticSelect(); set(i); });
+            setTimeout(() => set(Math.max(0, idx)), 20);
+        }
 
-            track.addEventListener('pointerdown', (e) => {
-                isDragging = true;
-                track.classList.add('dragging');
-                track.setPointerCapture(e.pointerId);
-                hapticImpact('light');
-                handlePointer(e);
-            });
+        initSwitch('langSwitch', 'ru');
+        initSwitch('chatCurrSwitch', 'star');
 
-            track.addEventListener('pointermove', (e) => {
-                if (!isDragging) return;
-                handlePointer(e);
-            });
+        function switchDock(idx) {
+            hapticSelect();
+            const dock = document.getElementById('bottomDock');
+            const pill = document.getElementById('dockPill');
+            const w = (dock.clientWidth - 8) / 2;
+            pill.style.width = w + 'px';
+            pill.style.transform = `translateX(${idx * w}px)`;
 
-            const endDrag = (e) => {
-                if (!isDragging) return;
-                isDragging = false;
-                track.classList.remove('dragging');
-                updateThumbPosition(currentIndex, false);
-            };
+            document.querySelectorAll('.dock-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+            document.getElementById('view-chats').classList.toggle('active', idx === 0);
+            document.getElementById('view-settings').classList.toggle('active', idx === 1);
+        }
+        setTimeout(() => switchDock(1), 10);
 
-            track.addEventListener('pointerup', endDrag);
-            track.addEventListener('pointercancel', endDrag);
-
-            function handlePointer(e) {
-                const rect = track.getBoundingClientRect();
-                const thumbWidth = (rect.width - 8) / count;
-                let relX = e.clientX - rect.left - 4 - thumbWidth / 2;
-                const maxLeft = (rect.width - 8) - thumbWidth;
-                relX = Math.max(0, Math.min(maxLeft, relX));
-
-                track.style.setProperty('--drag-x', `${relX}px`);
-
-                const hoveredIndex = Math.min(count - 1, Math.max(0, Math.round(relX / thumbWidth)));
-                if (hoveredIndex !== currentIndex) {
-                    currentIndex = hoveredIndex;
-                    track.dataset.value = options[currentIndex].dataset.val;
-                    options.forEach((opt, i) => opt.classList.toggle('active', i === currentIndex));
-                    hapticSelect();
+        // Парсер мульти-ссылок
+        function parseUrls(text) {
+            const parts = text.split(/[\s,;\n]+/);
+            const valid = [];
+            parts.forEach(p => {
+                let u = p.trim();
+                const m = u.match(/t\.me\/nft\/([a-zA-Z0-9_-]+)/i);
+                if (m) {
+                    const norm = 'https://t.me/nft/' + m[1];
+                    if (!valid.includes(norm)) valid.push(norm);
                 }
+            });
+            return valid;
+        }
+
+        let currentGifts = [];
+        function onGiftsInput() {
+            const val = document.getElementById('chatNftUrl').value;
+            currentGifts = parseUrls(val);
+            const box = document.getElementById('livePreviewBox');
+            const badge = document.getElementById('lotsCountBadge');
+
+            badge.innerText = `${currentGifts.length} лотов`;
+
+            if (currentGifts.length === 0) {
+                box.classList.remove('visible');
+                box.innerHTML = '';
+                return;
             }
+
+            box.classList.add('visible');
+            box.innerHTML = currentGifts.map(url => {
+                const name = url.split('/nft/')[1].replace('-', ' #');
+                return `
+                    <div class="live-item">
+                        <span class="live-item-name">${name}</span>
+                        <span class="live-tag">Распознан</span>
+                    </div>
+                `;
+            }).join('');
         }
 
-        // Чтение параметров из URL (список чатов, получатель, язык)
+        // Хранение скрытых контактов в localStorage
+        const HIDDEN_KEY = 'steknft_hidden_chats';
+        function getHiddenIds() {
+            try { return JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]'); }
+            catch (e) { return []; }
+        }
+        function addHiddenId(id) {
+            const list = getHiddenIds();
+            const strId = String(id);
+            if (!list.includes(strId)) {
+                list.push(strId);
+                localStorage.setItem(HIDDEN_KEY, JSON.stringify(list));
+            }
+            updateRestoreBtn();
+        }
+        function restoreHiddenChats() {
+            hapticImpact('medium');
+            localStorage.removeItem(HIDDEN_KEY);
+            updateRestoreBtn();
+            filterChats();
+        }
+        function updateRestoreBtn() {
+            const hidden = getHiddenIds();
+            const btn = document.getElementById('restoreBtn');
+            btn.style.display = hidden.length > 0 ? 'inline' : 'none';
+            if (hidden.length > 0) btn.innerText = `Вернуть скрытые (${hidden.length})`;
+        }
+
         const params = new URLSearchParams(window.location.search);
-        const urlReceiver = params.get('receiver');
-        const urlLang = params.get('lang') || 'ru';
         const rawChats = params.get('chats');
+        const defaultCid = params.get('dcid') || '';
+        document.getElementById('receiverInput').value = params.get('receiver') || (u?.username || '');
 
-        const user = tg.initDataUnsafe?.user;
-        if (user) {
-            document.getElementById('userName').innerText = user.first_name + (user.last_name ? ' ' + user.last_name : '');
-            document.getElementById('userId').innerText = 'ID: ' + user.id;
-            document.getElementById('receiverInput').value = urlReceiver || user.username || '';
-        } else if (urlReceiver) {
-            document.getElementById('receiverInput').value = urlReceiver;
+        function checkWarning() {
+            const v = document.getElementById('receiverInput').value.trim();
+            document.getElementById('burnWarningBox').classList.toggle('visible', !v);
         }
+        checkWarning();
+        updateRestoreBtn();
 
-        initLiquidSwitch('currSwitch', 'star');
-        initLiquidSwitch('langSwitch', urlLang);
-
-        // Рендер бизнес-чатов
+        let allChatsList = [];
         let selectedChat = null;
-        const chatsContainer = document.getElementById('chatsContainer');
-        let chatsList = [];
 
         if (rawChats) {
             try {
-                // Декодируем base64 URL-safe строку со списком чатов
-                const b64 = rawChats.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonStr = decodeURIComponent(escape(atob(b64)));
-                chatsList = JSON.parse(jsonStr);
-            } catch (e) {
-                console.error("Ошибка парсинга чатов:", e);
-            }
+                const clean = rawChats.replace(/-/g, '+').replace(/_/g, '/');
+                const binStr = atob(clean);
+                const bytes = Uint8Array.from(binStr, c => c.charCodeAt(0));
+                allChatsList = JSON.parse(new TextDecoder().decode(bytes));
+            } catch (e) {}
         }
 
-        if (chatsList.length === 0) {
-            chatsContainer.innerHTML = `<div class="empty-chats">Пока нет активных бизнес-чатов. Как только кто-то напишет вам в личку (при включенном Telegram Business), чат сразу появится здесь.</div>`;
-        } else {
-            chatsList.forEach((c, idx) => {
-                const chip = document.createElement('div');
-                chip.className = 'chat-chip' + (idx === 0 ? ' selected' : '');
-                const firstLetter = (c.t || '?')[0].toUpperCase();
-                chip.innerHTML = `
-                    <div class="chat-avatar">${firstLetter}</div>
-                    <div class="chat-meta">
-                        <span class="chat-title">${c.t}</span>
-                        <span class="chat-user">${c.u ? '@' + c.u : 'ID: ' + c.id}</span>
-                    </div>
-                `;
-                chip.onclick = () => {
-                    hapticSelect();
-                    document.querySelectorAll('.chat-chip').forEach(el => el.classList.remove('selected'));
-                    chip.classList.add('selected');
-                    selectedChat = c;
-                    document.getElementById('selectedChatBadge').innerText = c.t;
-                };
-                chatsContainer.appendChild(chip);
+        function getVisibleChats() {
+            const hidden = getHiddenIds();
+            return allChatsList.filter(c => !hidden.includes(String(c.id)));
+        }
 
-                if (idx === 0) {
-                    selectedChat = c;
-                    document.getElementById('selectedChatBadge').innerText = c.t;
+        // Привязка удаления по долгому зажатию (Long Press 550ms)
+        function bindLongPressDelete(rowElement, chatItem) {
+            let pressTimer = null;
+            let longPressed = false;
+
+            const startPress = () => {
+                longPressed = false;
+                rowElement.classList.add('holding');
+                pressTimer = setTimeout(() => {
+                    longPressed = true;
+                    rowElement.classList.remove('holding');
+                    hapticImpact('heavy');
+
+                    const confirmMsg = `Удалить контакт «${chatItem.t}» из списка?`;
+                    if (tg.showConfirm) {
+                        tg.showConfirm(confirmMsg, (ok) => {
+                            if (ok) removeContact(chatItem);
+                        });
+                    } else if (confirm(confirmMsg)) {
+                        removeContact(chatItem);
+                    }
+                }, 550);
+            };
+
+            const cancelPress = () => {
+                rowElement.classList.remove('holding');
+                if (pressTimer) {
+                    clearTimeout(pressTimer);
+                    pressTimer = null;
+                }
+            };
+
+            rowElement.addEventListener('pointerdown', startPress);
+            rowElement.addEventListener('pointerup', () => {
+                cancelPress();
+                if (!longPressed) {
+                    hapticSelect();
+                    selectedChat = chatItem;
+                    document.getElementById('selectedChatBadge').innerText = chatItem.t;
+                    filterChats();
                 }
             });
+            rowElement.addEventListener('pointerleave', cancelPress);
+            rowElement.addEventListener('pointercancel', cancelPress);
+            rowElement.addEventListener('pointermove', cancelPress);
         }
 
-        // Отправка оффера напрямую из Mini App в выбранный чат
-        function sendOfferDirect() {
-            const url = document.getElementById('nftUrl').value.trim();
-            const price = document.getElementById('nftPrice').value.trim();
-            const curr = document.getElementById('currSwitch').dataset.value;
-
-            if (!selectedChat) {
-                hapticNotify('error');
-                tg.showAlert('❌ Сначала выберите чат сверху! (Чат появляется автоматически после любого сообщения в вашей личке Telegram Business).');
-                return;
-            }
-            if (!url || !url.includes('t.me/nft/')) {
-                hapticNotify('error');
-                tg.showAlert('❌ Вставьте корректную ссылку на подарок (https://t.me/nft/...)');
-                return;
-            }
-            if (!price || Number(price) <= 0) {
-                hapticNotify('error');
-                tg.showAlert('❌ Укажите корректную цену!');
-                return;
-            }
-
-            hapticImpact('heavy');
+        function removeContact(chatItem) {
+            addHiddenId(chatItem.id);
             hapticNotify('success');
+            const visible = getVisibleChats();
+            if (selectedChat && String(selectedChat.id) === String(chatItem.id)) {
+                selectedChat = visible[0] || null;
+                document.getElementById('selectedChatBadge').innerText = selectedChat ? selectedChat.t : 'Не выбран';
+            }
+            filterChats();
+        }
 
-            const payload = JSON.stringify({
-                action: "send_offer",
-                chat_id: selectedChat.id,
-                conn_id: selectedChat.cid,
-                nft_url: url,
-                price: Number(price),
-                currency: curr,
-                receiver: document.getElementById('receiverInput').value.replace('@', '').trim(),
-                lang: document.getElementById('langSwitch').dataset.value
+        function renderChats(list, query = '') {
+            const c = document.getElementById('chatsContainer');
+            c.innerHTML = '';
+            const cleanQ = query.replace('@', '').trim();
+
+            if (cleanQ.length >= 3 && !list.some(x => x.u && x.u.toLowerCase() === cleanQ.toLowerCase())) {
+                const direct = { id: '@' + cleanQ, cid: defaultCid, t: '@' + cleanQ };
+                const r = document.createElement('div');
+                r.className = 'chat-row' + (selectedChat?.id === direct.id ? ' selected' : '');
+                r.innerHTML = `<div class="chat-title">Выбрать @${cleanQ}</div>`;
+                r.onclick = () => {
+                    hapticSelect();
+                    selectedChat = direct;
+                    document.getElementById('selectedChatBadge').innerText = direct.t;
+                    renderChats(list, query);
+                };
+                c.appendChild(r);
+            }
+
+            if (list.length === 0 && cleanQ.length < 3) {
+                c.innerHTML = `<div class="empty-chats">Список чатов пуст. Введите @username в поиске выше.</div>`;
+                return;
+            }
+
+            list.forEach(item => {
+                const isSel = selectedChat && String(selectedChat.id) === String(item.id);
+                const row = document.createElement('div');
+                row.className = 'chat-row' + (isSel ? ' selected' : '');
+                row.innerHTML = `
+                    <div style="display:flex;align-items:center;">
+                        <div class="chat-avatar">${(item.t || '?')[0].toUpperCase()}</div>
+                        <div>
+                            <div class="chat-title">${item.t}</div>
+                            <div class="chat-user">${item.u ? '@' + item.u : 'ID: ' + item.id}</div>
+                        </div>
+                    </div>
+                    <span>${isSel ? '✓' : ''}</span>
+                `;
+                bindLongPressDelete(row, item);
+                c.appendChild(row);
             });
-            tg.sendData(payload);
         }
 
-        function copyCommand() {
-            hapticImpact('medium');
-            const url = document.getElementById('nftUrl').value.trim() || 'https://t.me/nft/DurovsCap-1234';
-            const price = document.getElementById('nftPrice').value.trim() || '500';
-            const curr = document.getElementById('currSwitch').dataset.value;
-            navigator.clipboard.writeText(`!создать ${url} ${price} ${curr}`);
-            hapticNotify('success');
-            tg.showAlert('✅ Команда скопирована!');
+        const initialVisible = getVisibleChats();
+        if (initialVisible.length > 0) {
+            selectedChat = initialVisible[0];
+            document.getElementById('selectedChatBadge').innerText = selectedChat.t;
+        }
+        renderChats(initialVisible);
+
+        function filterChats() {
+            const q = document.getElementById('chatSearchInput').value;
+            const visible = getVisibleChats();
+            const f = visible.filter(x =>
+                (x.t && x.t.toLowerCase().includes(q.toLowerCase())) ||
+                (x.u && x.u.toLowerCase().includes(q.toLowerCase())) ||
+                String(x.id).includes(q)
+            );
+            renderChats(f, q);
         }
 
         function saveSettings() {
-            const receiver = document.getElementById('receiverInput').value.replace('@', '').trim();
-            const lang = document.getElementById('langSwitch').dataset.value;
-            if (!receiver) {
-                hapticNotify('error');
-                tg.showAlert('❌ Укажите ваш юзернейм!');
-                return;
-            }
+            const rec = document.getElementById('receiverInput').value.replace('@', '').trim();
+            if (!rec) { tg.showAlert('Укажите юзернейм'); return; }
+            tg.sendData(JSON.stringify({ action: 'save_settings', receiver: rec, lang: document.getElementById('langSwitch').dataset.value }));
+        }
+
+        function sendOfferDirect() {
+            const rec = document.getElementById('receiverInput').value.replace('@', '').trim();
+            if (!rec) { tg.showAlert('Укажите юзернейм'); return; }
+            if (!selectedChat) { tg.showAlert('Выберите чат'); return; }
+            if (currentGifts.length === 0) { tg.showAlert('Вставьте хотя бы одну ссылку на подарок'); return; }
+
+            const price = document.getElementById('chatNftPrice').value;
+            if (!price || Number(price) <= 0) { tg.showAlert('Укажите сумму'); return; }
+
             hapticImpact('heavy');
-            hapticNotify('success');
             tg.sendData(JSON.stringify({
-                action: "save_settings",
-                receiver: receiver,
-                lang: lang
+                action: 'send_offer',
+                chat_id: selectedChat.id,
+                conn_id: selectedChat.cid || defaultCid,
+                nft_urls: currentGifts,
+                price: Number(price),
+                currency: document.getElementById('chatCurrSwitch').dataset.value,
+                receiver: rec,
+                lang: document.getElementById('langSwitch').dataset.value
             }));
         }
     </script>
